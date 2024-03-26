@@ -380,7 +380,17 @@ observers can get the values by following code:
              for d = (cdr i)
              if (or (eq event-sym name) (eq t name))
              do (lsp-bridge-deferred-callback-post d event))))
+;; 这个函数的目的是在缓冲区中有完整的消息时，处理这些消息。它确保了所有从Lisp端传来的完整消息都被处理。
 
+;; 使用 with-current-buffer 宏切换到 process 对象对应的缓冲区。这是为了确保接下来的操作都是在正确的缓冲区上执行的。
+;; 使用一个 while 循环来检查缓冲区中是否有待处理的输入。这个检查是通过调用 lsp-bridge-epc-net-have-input-p 函数完成的。
+;; 如果有输入，它会读取一个事件（event），这是从LSP服务器接收到的完整消息。
+;; 记录日志，显示接收到的事件。
+;; 使用 unwind-protect 宏来确保即使在处理过程中发生错误，也能够重新调用 lsp-bridge-epc-process-available-input 函数来处理剩余的输入。
+;; 使用 condition-case 来捕获可能发生的错误，如果处理过程中出现错误，它会记录错误信息。
+;; 通过 apply 函数调用 lsp-bridge-epc-signal-send，将接收到的事件发送到指定的通道。
+;; 如果处理成功，设置 ok 变量为 t，表示消息已被处理。
+;; 如果消息没有被成功处理（ok 为 nil），则递归地调用 lsp-bridge-epc-process-available-input 函数来继续处理剩余的输入。
 (defun lsp-bridge-epc-process-available-input (connection process)
   "Process all complete messages that have arrived from Lisp."
   (with-current-buffer (process-buffer process)
