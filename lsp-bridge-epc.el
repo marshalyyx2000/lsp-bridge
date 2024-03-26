@@ -398,6 +398,13 @@ observers can get the values by following code:
           (unless ok
             (lsp-bridge-epc-process-available-input connection process)))))))
 
+
+;这个函数用于检查缓冲区中是否有完整的消息可用。
+
+;首先，它将点（光标）移动到缓冲区的最小位置，即缓冲区的开始。
+;接着，它检查缓冲区的大小是否至少为6个字节，这是为了确保有足够的数据来解码消息的长度。
+;然后，它检查缓冲区中剩余的数据（即缓冲区大小减去6个字节）是否足够解码出一个完整的消息长度。
+;如果这两个条件都满足，函数返回 t，表示有一个完整的消息可用；否则返回 nil。
 (defun lsp-bridge-epc-net-have-input-p ()
   "Return true if a complete message is available."
   (goto-char (point-min))
